@@ -116,7 +116,7 @@
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + ['KVM host: Failed to start and enable libvirtd'] }}"
       when:
-        - inventory_hostname =="localhost"
+        - inventory_hostname =="kvmhost"
         - result_libvirtd.failed
       changed_when: true
 
