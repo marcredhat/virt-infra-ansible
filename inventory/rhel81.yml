@@ -1,0 +1,10 @@
+---
+## YAML based inventory, see:
+## https://docs.ansible.com/ansible/latest/plugins/inventory/yaml.html
+#
+## Simple example using defaults to spin up 3 RHEL 8.1 guests
+rhel81:
+  hosts:
+    simple-rhel-8.1-[0:2]:
+      ansible_python_interpreter: /usr/bin/python
+  vars:

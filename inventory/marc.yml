@@ -1,0 +1,42 @@
+---
+## YAML based inventory, see:
+## https://docs.ansible.com/ansible/latest/plugins/inventory/yaml.html
+#
+# Example using mix of distros
+# Overriding some defaults at hostgroup and individual guest levels
+# Note that the virt_infra_variant are not set to specific versions,
+# this is to make it work on different hosts
+# Note also that CentOS 8 needs the path to system Python
+example:
+  hosts:
+    example-centos-7:
+      virt_infra_state: running
+      virt_infra_variant: centos7.0
+      virt_infra_distro_image: CentOS-7-x86_64-GenericCloud.qcow2
+      virt_infra_user: other
+      virt_infra_timezone: "Australia/Melbourne"
+      virt_infra_ram: 2048
+      virt_infra_networks:
+        - name: "example"
+          type: "nat"
+          model: "e1000"
+      virt_infra_disks:
+        - name: "boot"
+          io: "{{ virt_infra_disk_io }}"
+          cache: "{{ virt_infra_disk_cache }}"
+        - name: "data"
+          size: "20"
+      ansible_python_interpreter: /usr/bin/python
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    virt_infra_disks:
+      - name: "boot"
+      - name: "data"
+        size: "40"
+        bus: "scsi"
+      - name: "data2"
+        bus: "sata"
+    virt_infra_networks:
+      - name: "default"
+        type: "nat"
+        model: "virtio"
