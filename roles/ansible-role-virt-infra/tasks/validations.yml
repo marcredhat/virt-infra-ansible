@@ -146,7 +146,7 @@
         - inventory_hostname =="localhost"
         - item.rc != 0
       changed_when: true
-      with_items: "{{ hostvars[localhost][0]].result_deps.results }}"
+      with_items: "{{ result_deps.results }}"
 
     - name: "KVM host only: Get list of supported os-variants"
       command: osinfo-query os
@@ -184,17 +184,17 @@
 
     - name: "KVM host: Test for distro images"
       stat:
-        path: "{{ hostvars[localhost][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ virt_infra_distro_image }}"
+        path: "{{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ virt_infra_distro_image }}"
       register: result_base_image
       #delegate_to: "{{ groups['kvmhost'][0] }}"
       delegate_to: localhost
       when:
-        - inventory_hostname not in groups['kvmhost']
+        - inventory_hostname != "localhost"
 
     - name: "Guests: Check that distro disk image exists on KVM host"
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + \
-        [ hostvars[localhost][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) + '/' + \
+        [ virt_infra_host_image_path | default(virt_infra_host_image_path) + '/' + \
         virt_infra_distro_image + ' missing.{% if virt_infra_distro_image_url is defined and virt_infra_distro_image_url %} \
         Download from {{ virt_infra_distro_image_url }}{% endif %}'] }}"
       when:
@@ -208,9 +208,9 @@
       when:
         - inventory_hostname !="localhost"
         - virt_infra_state != "undefined"
-        - hostvars[groups['kvmhost'][0]].virt_infra_host_networks.absent is defined
+        - virt_infra_host_networks.absent is defined
         - virt_infra_networks | selectattr('name','equalto', item.name) | list | length != 0
-      with_items: "{{ hostvars[groups['kvmhost'][0]].virt_infra_host_networks.absent }}"
+      with_items: "{{ virt_infra_host_networks.absent }}"
       changed_when: true
 
     - name: "Guests: Check required network is present"
@@ -220,8 +220,8 @@
         - inventory_hostname !="localhost"
         - virt_infra_state != "undefined"
         - item.type is not defined or (item.type is defined and item.type != "bridge")
-        - hostvars[groups['kvmhost'][0]].virt_infra_host_networks.present is defined
-        - hostvars[groups['kvmhost'][0]].virt_infra_host_networks.present | selectattr('name','equalto', item.name) | list | length == 0
+        - virt_infra_host_networks.present is defined
+        - virt_infra_host_networks.present | selectattr('name','equalto', item.name) | list | length == 0
       with_items: "{{ virt_infra_networks }}"
       changed_when: true
 
@@ -231,7 +231,7 @@
       when:
         - inventory_hostname !="localhost"
         - item.type is defined and item.type == "bridge"
-        - item.name not in hostvars[groups['kvmhost'][0]].ansible_interfaces
+        - item.name not in ansible_interfaces
       with_items: "{{ virt_infra_networks }}"
       changed_when: true
 
@@ -249,9 +249,9 @@
         validations_failed: "{{ validations_failed|default([]) + [ virt_infra_variant + ' not supported by KVM host, run: sudo osinfo-query os'] }}"
       when:
         - inventory_hostname !="localhost"
-        - hostvars[groups['kvmhost'][0]].result_osinfo.stdout is defined
+        - result_osinfo.stdout is defined
         - virt_infra_variant is defined
-        - virt_infra_variant not in hostvars[groups['kvmhost'][0]].result_osinfo.stdout
+        - virt_infra_variant not in result_osinfo.stdout
       changed_when: true
 
     # - name: "Check that disks don't already exist for guest"
