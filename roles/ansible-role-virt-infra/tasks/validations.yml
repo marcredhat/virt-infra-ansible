@@ -36,7 +36,7 @@
 
     - name: "Abort play if KVM host is unreachable"
       assert:
-        that: hostvars[localhost][0].result_setup.unreachable is not defined
+        that: result_setup.unreachable is not defined
         fail_msg: "KVM host unreachable, please check inventory"
         quiet: true
       run_once: true
