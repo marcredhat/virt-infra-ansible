@@ -186,6 +186,7 @@
       stat:
         path: "{{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ virt_infra_distro_image }}"
       register: result_base_image
+      become: true
       #delegate_to: "{{ groups['kvmhost'][0] }}"
       delegate_to: localhost
       when:
