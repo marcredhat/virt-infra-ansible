@@ -19,7 +19,8 @@
         quiet: true
       when:
         - ansible_limit is defined
-      delegate_to: "{{ groups['kvmhost'][0] }}"
+      #delegate_to: "{{ groups['kvmhost'][0] }}"
+      delegate_to: localhost 
       run_once: true
 
     ## KVM host
