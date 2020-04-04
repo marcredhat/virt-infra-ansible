@@ -186,7 +186,8 @@
       stat:
         path: "{{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ virt_infra_distro_image }}"
       register: result_base_image
-      delegate_to: "{{ groups['kvmhost'][0] }}"
+      #delegate_to: "{{ groups['kvmhost'][0] }}"
+      delegate_to: localhost
       when:
         - inventory_hostname not in groups['kvmhost']
 
