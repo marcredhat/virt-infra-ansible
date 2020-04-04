@@ -36,7 +36,7 @@
 
     - name: "Abort play if KVM host is unreachable"
       assert:
-        that: hostvars[groups['kvmhost'][0]].result_setup.unreachable is not defined
+        that: hostvars[localhost][0]].result_setup.unreachable is not defined
         fail_msg: "KVM host unreachable, please check inventory"
         quiet: true
       run_once: true
@@ -146,7 +146,7 @@
         - inventory_hostname =="localhost"
         - item.rc != 0
       changed_when: true
-      with_items: "{{ hostvars[groups['kvmhost'][0]].result_deps.results }}"
+      with_items: "{{ hostvars[localhost][0]].result_deps.results }}"
 
     - name: "KVM host only: Get list of supported os-variants"
       command: osinfo-query os
@@ -184,7 +184,7 @@
 
     - name: "KVM host: Test for distro images"
       stat:
-        path: "{{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ virt_infra_distro_image }}"
+        path: "{{ hostvars[localhost][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ virt_infra_distro_image }}"
       register: result_base_image
       #delegate_to: "{{ groups['kvmhost'][0] }}"
       delegate_to: localhost
@@ -194,7 +194,7 @@
     - name: "Guests: Check that distro disk image exists on KVM host"
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + \
-        [ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) + '/' + \
+        [ hostvars[localhost][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) + '/' + \
         virt_infra_distro_image + ' missing.{% if virt_infra_distro_image_url is defined and virt_infra_distro_image_url %} \
         Download from {{ virt_infra_distro_image_url }}{% endif %}'] }}"
       when:
