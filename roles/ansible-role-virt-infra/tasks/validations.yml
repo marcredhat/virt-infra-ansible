@@ -32,7 +32,7 @@
           - network
       register: result_setup
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
 
     - name: "Abort play if KVM host is unreachable"
       assert:
@@ -57,14 +57,14 @@
       delay: 5
       until: result_libvirtd_install is succeeded
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
       ignore_errors: true
 
     - name: "KVM host only: Advise unable to install KVM and libvirtd packages"
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + ['KVM host: Failed to install kvm and libvirtd packages'] }}"
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
         - result_libvirtd_install.failed
       changed_when: true
 
@@ -78,14 +78,14 @@
       delay: 5
       until: result_deps_install is succeeded
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
       ignore_errors: true
 
     - name: "KVM host only: Advise unable to install packages"
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + ['KVM host: Failed to install deps'] }}"
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
         - result_deps_install.failed
       changed_when: true
 
@@ -95,7 +95,7 @@
       register: result_deps
       with_items: "{{ virt_infra_host_deps }}"
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
       ignore_errors: true
       args:
         executable: /bin/bash
@@ -109,14 +109,14 @@
       register: result_libvirtd
       ignore_errors: yes
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
       become: true
 
     - name: "KVM host only: Advise unable to start libvirtd"
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + ['KVM host: Failed to start and enable libvirtd'] }}"
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
         - result_libvirtd.failed
       changed_when: true
 
@@ -128,14 +128,14 @@
       register: result_libvirtd
       become: true
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
       ignore_errors: true
 
     - name: "KVM host only: Advise libvirtd not contactable"
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + ['KVM host: libvirtd connection failed on KVM host'] }}"
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
         - result_libvirtd.list_vms is not defined
       changed_when: true
 
@@ -143,7 +143,7 @@
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + [ 'KVM host: ' +  item.item + ' not found on KVM host, please install'] }}"
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
         - item.rc != 0
       changed_when: true
       with_items: "{{ hostvars[groups['kvmhost'][0]].result_deps.results }}"
@@ -152,7 +152,7 @@
       command: osinfo-query os
       register: result_osinfo
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
       ignore_errors: true
       changed_when: false
 
@@ -160,7 +160,7 @@
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + ['KVM host: os variants list (osinfo-query os) failed'] }}"
       when:
-        - inventory_hostname in localhost
+        - inventory_hostname =="localhost"
         - result_osinfo.rc is defined
         - result_osinfo.rc != 0
       changed_when: true
@@ -170,7 +170,7 @@
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + ['boot disk is not defined'] }}"
       when:
-        - inventory_hostname not in localhost
+        - inventory_hostname !="localhost"
         - virt_infra_disks | selectattr('name','equalto','boot') | list | length == 0
       changed_when: true
 
@@ -178,7 +178,7 @@
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + [ virt_infra_state + ' not a valid state, try: running, shutdown, destroyed or undefined'] }}"
       when:
-        - inventory_hostname not in localhost
+        - inventory_hostname !="localhost"
         - virt_infra_state not in ['running', 'shutdown', 'destroyed', 'undefined']
       changed_when: true
 
@@ -198,7 +198,7 @@
         virt_infra_distro_image + ' missing.{% if virt_infra_distro_image_url is defined and virt_infra_distro_image_url %} \
         Download from {{ virt_infra_distro_image_url }}{% endif %}'] }}"
       when:
-        - inventory_hostname not in localhost
+        - inventory_hostname !="localhost"
         - not result_base_image.stat.exists
       changed_when: true
 
@@ -206,7 +206,7 @@
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + [ item.name + ' network required, but would be removed' ] }}"
       when:
-        - inventory_hostname not in localhost
+        - inventory_hostname !="localhost"
         - virt_infra_state != "undefined"
         - hostvars[groups['kvmhost'][0]].virt_infra_host_networks.absent is defined
         - virt_infra_networks | selectattr('name','equalto', item.name) | list | length != 0
@@ -217,7 +217,7 @@
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + [ item.name + ' network required, but not being created' ] }}"
       when:
-        - inventory_hostname not in localhost
+        - inventory_hostname !="localhost"
         - virt_infra_state != "undefined"
         - item.type is not defined or (item.type is defined and item.type != "bridge")
         - hostvars[groups['kvmhost'][0]].virt_infra_host_networks.present is defined
@@ -229,7 +229,7 @@
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + [ item.name + ' bridge interface missing on KVM host'] }}"
       when:
-        - inventory_hostname not in localhost
+        - inventory_hostname !="localhost"
         - item.type is defined and item.type == "bridge"
         - item.name not in hostvars[groups['kvmhost'][0]].ansible_interfaces
       with_items: "{{ virt_infra_networks }}"
@@ -239,7 +239,7 @@
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + [ item.model + ' network model not valid, try: virtio, e1000, rtl8139' ] }}"
       when:
-        - inventory_hostname not in localhost
+        - inventory_hostname !="localhost"
         - item.model is defined and item.model not in ['virtio', 'e1000', 'rtl8139']
       with_items: "{{ virt_infra_networks }}"
       changed_when: true
@@ -248,7 +248,7 @@
       set_fact:
         validations_failed: "{{ validations_failed|default([]) + [ virt_infra_variant + ' not supported by KVM host, run: sudo osinfo-query os'] }}"
       when:
-        - inventory_hostname not in localhost
+        - inventory_hostname !="localhost"
         - hostvars[groups['kvmhost'][0]].result_osinfo.stdout is defined
         - virt_infra_variant is defined
         - virt_infra_variant not in hostvars[groups['kvmhost'][0]].result_osinfo.stdout
