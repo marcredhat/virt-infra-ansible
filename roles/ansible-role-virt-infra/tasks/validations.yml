@@ -45,7 +45,7 @@
     - name: "KVM host only: Load distro specific vars"
       include_vars: "{{ ansible_distribution.split(' ', 1)[0] | lower }}.yml"
       when:
-        - inventory_hostname in groups['kvmhost']
+        - inventory_hostname =="localhost"
 
     - name: "KVM host only: Install KVM and libvirtd packages"
       package:
