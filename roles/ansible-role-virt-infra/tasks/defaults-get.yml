@@ -3,8 +3,8 @@
 - name: Get details of KVM host
   setup:
   when:
-    - inventory_hostname in groups['kvmhost']
-
+    #- inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"
 # Use SSH keys on KVM host to use as defaults for cloud-init
 # These are only used if no keys are specified
 - name: Find SSH public keys on KVM host for cloud-init if none specified
