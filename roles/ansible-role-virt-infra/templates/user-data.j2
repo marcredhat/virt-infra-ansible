@@ -14,10 +14,10 @@ chpasswd:
 resize_rootfs: True
 ssh_pwauth: "{{ virt_infra_ssh_pwauth | default(True) }}"
 ssh_authorized_keys:
-{% for key in virt_infra_ssh_keys | default(hostvars[groups['kvmhost'][0]].virt_infra_ssh_keys, true) %}
+{% for key in virt_infra_ssh_keys | default(hostvars[groups['ungrouped'][0]].virt_infra_ssh_keys, true) %}
   - {{ key }}
 {% endfor %}
-timezone: {{ virt_infra_timezone | default(hostvars[groups['kvmhost'][0]].virt_infra_timezone, true) }}
+timezone: {{ virt_infra_timezone | default(hostvars[groups['ungrouped'][0]].virt_infra_timezone, true) }}
 {% if virt_infra_root_password is defined and virt_infra_root_password %}
 disable_root: false
 {% endif %}
