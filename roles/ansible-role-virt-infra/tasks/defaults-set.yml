@@ -2,7 +2,7 @@
 # Set defaults for the guests based on the KVM host
 - name: Use KVM host architecture for VMs when not specified
   set_fact:
-    virt_infra_architecture: "{{ ansible_architecture }}"
+    virt_infra_architecture: "x86_64"
   when:
     #- inventory_hostname not in groups['kvmhost']
     - inventory_hostname !="kvmhost"
