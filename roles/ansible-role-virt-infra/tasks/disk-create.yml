@@ -11,7 +11,7 @@
   register: result_disk_create
   become: true
   when:
-    - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
+    - inventory_hostname != 'kvmhost'
     - virt_infra_state != "undefined"
   delegate_to: "{{ groups['kvmhost'][0] }}"
   with_items: "{{ virt_infra_disks }}"
