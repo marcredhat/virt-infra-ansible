@@ -9,16 +9,16 @@
   register: result_pool_list
   become: true
   when:
-    #- inventory_hostname in groups['kvmhost']
-    - inventory_hostname =="kvmhost"
+    - inventory_hostname in groups['kvmhost']
+
 - name: Get info on storage pools
   virt_pool:
     command: info
   register: result_pool_info
   become: true
   when:
-    #- inventory_hostname in groups['kvmhost']
-    - inventory_hostname =="kvmhost"
+    - inventory_hostname in groups['kvmhost']
+
 - name: Define storage pool
   virt_pool:
     command: define
@@ -27,8 +27,7 @@
   register: result_pool_define
   become: true
   when:
-    #- inventory_hostname in groups['kvmhost']
-    - inventory_hostname =="kvmhost"
+    - inventory_hostname in groups['kvmhost']
     - '"default" not in result_pool_list'
 
 - name: Build storage pool
@@ -38,8 +37,7 @@
   become: true
   register: result_pool_build
   when:
-    #- inventory_hostname in groups['kvmhost']
-    - inventory_hostname =="kvmhost"
+    - inventory_hostname in groups['kvmhost']
     - '"default" in result_pool_list'
     - result_pool_info.pools.default.state != 'active'
   ignore_errors: true
@@ -51,5 +49,4 @@
   become: true
   register: result_pool_activate
   when:
-    #- inventory_hostname in groups['kvmhost']
-    - inventory_hostname =="kvmhost"
+    - inventory_hostname in groups['kvmhost']
