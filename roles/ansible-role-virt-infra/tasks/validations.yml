@@ -32,7 +32,7 @@
           - network
       register: result_setup
       when:
-        - inventory_hostname in groups['kvmhost']
+        - inventory_hostname in groups['ungrouped']
 
     - name: "Abort play if KVM host is unreachable"
       assert:
