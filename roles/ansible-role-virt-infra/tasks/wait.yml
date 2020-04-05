@@ -15,17 +15,19 @@
     search_regex: OpenSSH
     timeout: 600
   when:
-    - inventory_hostname not in groups['kvmhost']
+    #- inventory_hostname not in groups['kvmhost']
+    - inventory_hostname !="kvmhost"
     - virt_infra_state == "running"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
 
 - name: Get guest SSH fingerprints
   shell: "ssh-keyscan {{ inventory_hostname }} {{ vm_ip }} | sort"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
   register: result_keyscan
   changed_when: false
   when:
-    - inventory_hostname not in groups['kvmhost']
+    #- inventory_hostname not in groups['kvmhost']
+    - inventory_hostname !="kvmhost"
     - virt_infra_state == "running"
 
 - name: Add guest fingerprint to SSH known_hosts
@@ -38,7 +40,7 @@
     block: |-
       {{ hostvars[item]['result_keyscan']['stdout'] }}
   become: false
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
   when:
     - hostvars[item]['result_keyscan']['stdout'] is defined and hostvars[item]['result_keyscan']['stdout']
     - hostvars[item]['virt_infra_state'] | default(virt_infra_state) == "running"
@@ -49,5 +51,6 @@
   wait_for:
     path: /etc/cloud/cloud-init.disabled
   when:
-    - inventory_hostname not in groups['kvmhost']
+    #- inventory_hostname not in groups['kvmhost']
+    - inventory_hostname !="kvmhost" 
     - virt_infra_state == "running"
