@@ -5,17 +5,17 @@
     virt-install
     --import
     --boot hd
-    --connect {{ hostvars[groups['kvmhost'][0]].virt_infra_host_libvirt_url | default(virt_infra_host_libvirt_url) }}
+    --connect {{ virt_infra_host_libvirt_url | default(virt_infra_host_libvirt_url) }}
     --cpu {{ virt_infra_cpu_model }}
     {% for disk in virt_infra_disks %}
     {% if disk.bus is defined and disk.bus == "nvme" %}
-    --qemu-commandline='-drive file={{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-{{ disk.name }}.qcow2,format=qcow2,if=none,id={{ disk.name | upper }}'
+    --qemu-commandline='-drive file={{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-{{ disk.name }}.qcow2,format=qcow2,if=none,id={{ disk.name | upper }}'
     --qemu-commandline='-device nvme,drive={{ disk.name | upper }},serial={{ disk.name }}'
     {% else %}
-    --disk {{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-{{ disk.name }}.qcow2,format=qcow2,bus={{ disk.bus | default(virt_infra_disk_bus) }}{% if disk.cache is defined and disk.cache %},cache={{ disk.cache }}{% endif %}{% if disk.io is defined and disk.io %},io={{ disk.io }}{% endif %}
+    --disk {{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-{{ disk.name }}.qcow2,format=qcow2,bus={{ disk.bus | default(virt_infra_disk_bus) }}{% if disk.cache is defined and disk.cache %},cache={{ disk.cache }}{% endif %}{% if disk.io is defined and disk.io %},io={{ disk.io }}{% endif %}
     {% endif %}
     {% endfor %}
-    --disk {{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-cloudinit.iso,device=cdrom,bus=scsi,format=iso
+    --disk {{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-cloudinit.iso,device=cdrom,bus=scsi,format=iso
     --controller type=scsi,model=virtio-scsi
     --channel unix,target_type=virtio,name=org.qemu.guest_agent.0
     --graphics spice
@@ -47,10 +47,11 @@
   delay: 2
   until: result_vm_create is succeeded
   when:
-    - inventory_hostname not in groups['kvmhost']
-    - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
+    #- inventory_hostname not in groups['kvmhost']
+    - inventory_hostname !="kvmhost" 
+    - inventory_hostname not in result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
   args:
     executable: /bin/bash
 
@@ -58,18 +59,19 @@
 - name: Set state of VM
   virt:
     name: "{{ inventory_hostname }}"
-    state: "{{ 'destroyed' if ( virt_infra_state == 'undefined' or (virt_infra_state == 'shutdown' and inventory_hostname in inventory_hostname not in hostvars[groups['kvmhost'][0]].result_running_vms.list_vms)) else virt_infra_state }}"
+    state: "{{ 'destroyed' if ( virt_infra_state == 'undefined' or (virt_infra_state == 'shutdown' and inventory_hostname in inventory_hostname not in result_running_vms.list_vms)) else virt_infra_state }}"
     autostart: "{{ virt_infra_autostart }}"
-    uri: "{{ hostvars[groups['kvmhost'][0]].virt_infra_host_libvirt_url | default(virt_infra_host_libvirt_url) }}"
+    uri: "{{ virt_infra_host_libvirt_url | default(virt_infra_host_libvirt_url) }}"
   become: true
   register: result_vm_state
   retries: 30
   delay: 2
   until: result_vm_state is succeeded
   when:
-    - inventory_hostname not in groups['kvmhost']
-    - not (virt_infra_state == "undefined" and inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms)
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+    #- inventory_hostname not in groups['kvmhost']
+    - inventory_hostname !="kvmhost"
+    - not (virt_infra_state == "undefined" and inventory_hostname not in result_all_vms.list_vms)
+  delegate_to: kvmhost
 
 # Wait for network so we can get the IP to log in
 # Do this for all VMs, in case they already existed and IP has changed
@@ -77,7 +79,7 @@
   shell: >
     set -o pipefail ;
     virsh
-    --connect {{ hostvars[groups['kvmhost'][0]].virt_infra_host_libvirt_url | default(virt_infra_host_libvirt_url) }}
+    --connect {{ virt_infra_host_libvirt_url | default(virt_infra_host_libvirt_url) }}
     domifaddr
     --source agent
     {{ inventory_hostname }}
@@ -93,9 +95,10 @@
   retries: 30
   delay: 10
   become: true
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
   when:
-    - inventory_hostname not in groups['kvmhost']
+    #- inventory_hostname not in groups['kvmhost']
+    - inventory_hostname !="kvmhost"
     - virt_infra_state == "running"
   changed_when: false
   args:
@@ -107,5 +110,6 @@
   set_fact:
     vm_ip: "{{ result_get_ip.stdout }}"
   when:
-    - inventory_hostname not in groups['kvmhost']
+    #- inventory_hostname not in groups['kvmhost']
+    - inventory_hostname !="kvmhost"
     - virt_infra_state == "running"
