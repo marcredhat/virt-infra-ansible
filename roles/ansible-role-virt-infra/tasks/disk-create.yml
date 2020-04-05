@@ -3,6 +3,12 @@
 # We only create disks if they don't already exist
 # and if the VM is not going to be undefined
 # Boot must be defined first in virt_infra_disks
+- name: "Ansible | List all known variables and facts"
+  debug:
+    var: hostvars[inventory_hostname]
+
+
+
 - name: Create disks for VM
   command: >
     qemu-img create -f qcow2
