@@ -85,7 +85,7 @@
   when:
     #- inventory_hostname in groups['kvmhost']
     - inventory_hostname =="kvmhost"  
-args:
+  args:
     executable: /bin/bash
 
 - name: Store timezone from KVM host
