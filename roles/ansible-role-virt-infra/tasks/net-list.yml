@@ -6,7 +6,8 @@
   set_fact:
     result_libvirt_network_before: "{{ result_libvirt_network }}"
   when:
-    - inventory_hostname in groups['kvmhost']
+    #- inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"
     - result_libvirt_network is defined and result_libvirt_network
   run_once: true
   changed_when: false
