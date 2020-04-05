@@ -7,36 +7,36 @@
   command: >
     qemu-img create -f qcow2
     {% if item.name == 'boot' %}
-    -b {{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ virt_infra_distro_image }} -F qcow2
+    -b {{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ virt_infra_distro_image }} -F qcow2
     {% endif %}
-    {{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-{{ item.name }}.qcow2
+    {{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-{{ item.name }}.qcow2
     {{ item.size | default(virt_infra_disk_size) }}G
   args:
-    creates: "{{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-{{ item.name }}.qcow2"
+    creates: "{{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-{{ item.name }}.qcow2"
   register: result_disk_create
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
-    - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
+    - inventory_hostname != "kvmhost"
+    - inventory_hostname not in result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
   with_items: "{{ virt_infra_disks }}"
 
 # Due to the way NVME works with qemu (as args),
 # we need specific permissions on the image
 - name: Set permissions on NVMe disk images
   file:
-    path: "{{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-{{ item.name }}.qcow2"
+    path: "{{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-{{ item.name }}.qcow2"
     owner: "{{ virt_infra_host_image_owner | default('root') }}"
     group: "{{ virt_infra_host_image_group | default('qemu') }}"
     mode: "{{ virt_infra_host_image_mode | default('0660') }}"
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
-    - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
+    - inventory_hostname != "kvmhost"
+    - inventory_hostname not in result_all_vms.list_vms
     - virt_infra_state != "undefined"
     - item.bus is defined and item.bus == "nvme"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
   with_items: "{{ virt_infra_disks }}"
 
 ## Create cloudinit iso
@@ -47,10 +47,10 @@
   register: result_tempdir
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
-    - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
+    - inventory_hostname != "kvmhost"
+    - inventory_hostname not in result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
 
 - name: Create cloud init meta-data for guest
   template:
@@ -59,10 +59,10 @@
     mode: '0644'
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
-    - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
+    - inventory_hostname != "kvmhost"
+    - inventory_hostname not in result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
 
 - name: Create cloud init user-data for guest
   template:
@@ -71,56 +71,56 @@
     mode: '0644'
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
-    - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
+    - inventory_hostname != "kvmhost"
+    - inventory_hostname not in result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
 
 - name: Make cloud-init iso for guest
   shell: >
-    {{ hostvars[groups['kvmhost'][0]].virt_infra_mkiso_cmd | default(virt_infra_mkiso_cmd) }} -J -l -R -V "cidata" -iso-level 4
-    -o {{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-cloudinit.iso
+    {{ virt_infra_mkiso_cmd | default(virt_infra_mkiso_cmd) }} -J -l -R -V "cidata" -iso-level 4
+    -o {{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-cloudinit.iso
     {{ result_tempdir.path }}/user-data
     {{ result_tempdir.path }}/meta-data
   args:
-    creates: "{{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-cloudinit.iso"
+    creates: "{{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-cloudinit.iso"
     executable: /bin/bash
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
-    - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
+    - inventory_hostname != "kvmhost"
+    - inventory_hostname not in result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
 
 - name: Clean up temporary dir
   file:
     path: "{{ result_tempdir.path }}"
     state: absent
   when:
-    - inventory_hostname not in groups['kvmhost']
+    - inventory_hostname != "kvmhost"
     - result_tempdir.path is defined
   become: true
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
 
 - name: Subscribe
   command: >
     virt-customize
-    -a {{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-boot.qcow2
+    -a {{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-boot.qcow2
     --run-command 'subscription-manager register --username=username --password=password'
     --run-command 'subscription-manager refresh'
     --run-command 'subscription-manager attach --pool pool'
     --run-command 'subscription-manager repos --enable=*'
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
-    - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
+    - inventory_hostname != "kvmhost"
+    - inventory_hostname not in result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
 
 - name: Install cloud-init and qemu-guest-agent in guest disk
   command: >
     virt-customize
-    -a {{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-boot.qcow2
+    -a {{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-boot.qcow2
     --install qemu-guest-agent,cloud-init
   register: result_disk_deps
   ignore_errors: True
@@ -129,10 +129,10 @@
   until: result_disk_deps is succeeded
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
-    - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
+    - inventory_hostname != "kvmhost"
+    - inventory_hostname not in result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
 
 
 - name: Sysprep guest disk
@@ -142,11 +142,11 @@
     {% if virt_infra_root_password is defined and virt_infra_root_password %}
     --root-password password:{{ virt_infra_root_password }}
     {% endif %}
-    --add {{ hostvars[groups['kvmhost'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-boot.qcow2
+    --add {{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-boot.qcow2
   register: result_disk_sysprep
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
-    - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
+    - inventory_hostname != "kvmhost"
+    - inventory_hostname not in result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
