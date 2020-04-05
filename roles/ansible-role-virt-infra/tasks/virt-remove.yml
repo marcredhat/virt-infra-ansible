@@ -1,15 +1,14 @@
 ---
 - name: Undefine VM
   command: >
-    virsh --connect {{ virt_infra_host_libvirt_url | default(virt_infra_host_libvirt_url) }}
+    virsh --connect {{ hostvars[groups['ungrouped'][0]].virt_infra_host_libvirt_url | default(virt_infra_host_libvirt_url) }}
     undefine --remove-all-storage {{ inventory_hostname }}
   become: true
   when:
-    #- inventory_hostname not in groups['kvmhost']
-    - inventory_hostname !="kvmhost"
-    - inventory_hostname in result_all_vms.list_vms
+    - inventory_hostname not in groups['ungrouped']
+    - inventory_hostname in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state == "undefined"
-  delegate_to: kvmhost
+  delegate_to: "{{ groups['ungrouped'][0] }}"
   register: result_undefine
   retries: 30
   delay: 2
