@@ -13,7 +13,6 @@
   when:
     - inventory_hostname != 'ungrouped'
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['ungrouped'][0] }}"
   with_items: "{{ virt_infra_disks }}"
 
 # Due to the way NVME works with qemu (as args),
@@ -29,7 +28,6 @@
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
     - item.bus is defined and item.bus == "nvme"
-  delegate_to: "{{ groups['ungrouped'][0] }}"
   with_items: "{{ virt_infra_disks }}"
 
 ## Create cloudinit iso
@@ -42,7 +40,6 @@
   when:
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Create cloud init meta-data for guest
   template:
@@ -53,7 +50,6 @@
   when:
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Create cloud init user-data for guest
   template:
@@ -64,7 +60,6 @@
   when:
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Make cloud-init iso for guest
   shell: >
@@ -79,7 +74,6 @@
   when:
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Clean up temporary dir
   file:
@@ -88,7 +82,6 @@
   when:
     - result_tempdir.path is defined
   become: true
-  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Install cloud-init and qemu-guest-agent in guest disk
   command: >
@@ -108,7 +101,6 @@
   when:
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Remove RHEL registration
   command: >
@@ -128,7 +120,6 @@
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_sm_creds is defined and virt_infra_sm_creds
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Sysprep guest disk
   command: >
