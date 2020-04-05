@@ -10,7 +10,7 @@
 
 - name: Use KVM host domain for VMs when not specified
   set_fact:
-    virt_infra_domainname: "{{ ansible_domain }}"
+    virt_infra_domainname: "marc.local"
   when:
     #- inventory_hostname not in groups['kvmhost']
     - inventory_hostname !="kvmhost"
