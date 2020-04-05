@@ -1,3 +1,8 @@
+---
+# Create the disks for VMs
+# We only create disks if they don't already exist
+# and if the VM is not going to be undefined
+# Boot must be defined first in virt_infra_disks
 - name: Create disks for VM
   command: >
     qemu-img create -f qcow2
@@ -11,8 +16,10 @@
   register: result_disk_create
   become: true
   when:
-    - inventory_hostname != 'ungrouped'
+    - inventory_hostname not in groups['ungrouped']
+    - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
+  delegate_to: "{{ groups['ungrouped'][0] }}"
   with_items: "{{ virt_infra_disks }}"
 
 # Due to the way NVME works with qemu (as args),
@@ -25,9 +32,11 @@
     mode: "{{ virt_infra_host_image_mode | default('0660') }}"
   become: true
   when:
+    - inventory_hostname not in groups['ungrouped']
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
     - item.bus is defined and item.bus == "nvme"
+  delegate_to: "{{ groups['ungrouped'][0] }}"
   with_items: "{{ virt_infra_disks }}"
 
 ## Create cloudinit iso
@@ -38,8 +47,10 @@
   register: result_tempdir
   become: true
   when:
+    - inventory_hostname not in groups['ungrouped']
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
+  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Create cloud init meta-data for guest
   template:
@@ -48,8 +59,10 @@
     mode: '0644'
   become: true
   when:
+    - inventory_hostname not in groups['ungrouped']
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
+  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Create cloud init user-data for guest
   template:
@@ -58,8 +71,10 @@
     mode: '0644'
   become: true
   when:
+    - inventory_hostname not in groups['ungrouped']
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
+  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Make cloud-init iso for guest
   shell: >
@@ -72,26 +87,25 @@
     executable: /bin/bash
   become: true
   when:
+    - inventory_hostname not in groups['ungrouped']
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
+  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Clean up temporary dir
   file:
     path: "{{ result_tempdir.path }}"
     state: absent
   when:
+    - inventory_hostname not in groups['ungrouped']
     - result_tempdir.path is defined
   become: true
+  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Install cloud-init and qemu-guest-agent in guest disk
   command: >
     virt-customize
     -a {{ hostvars[groups['ungrouped'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-boot.qcow2
-    {% if virt_infra_sm_creds is defined and virt_infra_sm_creds %}
-    --sm-register
-    --sm-credentials {{ virt_infra_sm_creds }}
-    --sm-attach {{ virt_infra_sm_attach | default("auto") }}
-    {% endif %}
     --install qemu-guest-agent,cloud-init
   register: result_disk_deps
   retries: 10
@@ -99,27 +113,10 @@
   until: result_disk_deps is succeeded
   become: true
   when:
+    - inventory_hostname not in groups['ungrouped']
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
-
-#- name: Remove RHEL registration
-#  command: >
-#    virt-customize
-#    -a {{ hostvars[groups['ungrouped'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-boot.qcow2
-#    {% if virt_infra_sm_creds is defined and virt_infra_sm_creds %}
-#    --sm-remove
-#    --sm-unregister
-#    --sm-credentials {{ virt_infra_sm_creds }}
-#    {% endif %}
-#  register: result_disk_unregister
-#  retries: 10
-#  delay: 2
-#  until: result_disk_unregister is succeeded
-#  become: true
-#  when:
-#    - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
-#    - virt_infra_sm_creds is defined and virt_infra_sm_creds
-#    - virt_infra_state != "undefined"
+  delegate_to: "{{ groups['ungrouped'][0] }}"
 
 - name: Sysprep guest disk
   command: >
@@ -132,5 +129,7 @@
   register: result_disk_sysprep
   become: true
   when:
+    - inventory_hostname not in groups['ungrouped']
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
+  delegate_to: "{{ groups['ungrouped'][0] }}"
