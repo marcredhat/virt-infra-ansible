@@ -70,17 +70,17 @@
     - virt_infra_state != "undefined"
   delegate_to: kvmhost
 
-- name: Create cloud init user-data for guest
-  template:
-    src: templates/user-data.j2
-    dest: "{{ result_tempdir.path }}/user-data"
-    mode: '0644'
-  become: true
-  when:
-    - inventory_hostname != "kvmhost"
-    #- inventory_hostname  not in  hostvars[groups['kvmhost'][0]].result_all_vms.list_vms 
-    - virt_infra_state != "undefined"
-  delegate_to: kvmhost
+#- name: Create cloud init user-data for guest
+#  template:
+#    src: templates/user-data.j2
+#    dest: "{{ result_tempdir.path }}/user-data"
+#    mode: '0644'
+#  become: true
+#  when:
+#    - inventory_hostname != "kvmhost"
+#    #- inventory_hostname  not in  hostvars[groups['kvmhost'][0]].result_all_vms.list_vms 
+#    - virt_infra_state != "undefined"
+#  delegate_to: kvmhost
 
 - name: Make cloud-init iso for guest
   shell: >
