@@ -13,7 +13,7 @@ rhel81:
 kvmhost:
   hosts:
     # Put your KVM host connection and settings here
-    localhost:
+    kvmhost:
       ansible_connection: local
       ansible_python_interpreter: /usr/bin/python3
   vars:
