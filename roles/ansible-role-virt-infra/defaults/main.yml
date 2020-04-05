@@ -29,7 +29,7 @@ virt_infra_machine_type: "q35"
 
 # SSH keys are a list, you can add more than one
 # If not specified, we default to all public keys on KVM host
-virt_infra_ssh_keys: []
+virt_infra_ssh_keys: ["/home/marc/.ssh/id_rsa.pub"]
 
 # If no SSH keys are specified or found on the KVM host, we create one with this
 virt_infra_ssh_key_size: "2048"
