@@ -86,7 +86,7 @@
   shell: >
     {{ virt_infra_mkiso_cmd | default(virt_infra_mkiso_cmd) }} -J -l -R -V "cidata" -iso-level 4
     -o {{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-cloudinit.iso
-    {{ result_tempdir.path }}/user-data
+#    {{ result_tempdir.path }}/user-data
     {{ result_tempdir.path }}/meta-data
   args:
     creates: "{{ virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-cloudinit.iso"
