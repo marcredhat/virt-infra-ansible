@@ -16,7 +16,6 @@
   register: result_disk_create
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
     - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
   delegate_to: "{{ groups['kvmhost'][0] }}"
@@ -32,7 +31,6 @@
     mode: "{{ virt_infra_host_image_mode | default('0660') }}"
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
     - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
     - item.bus is defined and item.bus == "nvme"
@@ -47,7 +45,6 @@
   register: result_tempdir
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
     - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
   delegate_to: "{{ groups['kvmhost'][0] }}"
@@ -59,7 +56,6 @@
     mode: '0644'
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
     - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
   delegate_to: "{{ groups['kvmhost'][0] }}"
@@ -71,7 +67,6 @@
     mode: '0644'
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
     - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
   delegate_to: "{{ groups['kvmhost'][0] }}"
@@ -87,7 +82,6 @@
     executable: /bin/bash
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
     - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
   delegate_to: "{{ groups['kvmhost'][0] }}"
@@ -97,7 +91,6 @@
     path: "{{ result_tempdir.path }}"
     state: absent
   when:
-    - inventory_hostname not in groups['kvmhost']
     - result_tempdir.path is defined
   become: true
   delegate_to: "{{ groups['kvmhost'][0] }}"
@@ -118,7 +111,6 @@
   until: result_disk_deps is succeeded
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
     - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
   delegate_to: "{{ groups['kvmhost'][0] }}"
@@ -138,7 +130,6 @@
   until: result_disk_unregister is succeeded
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
     - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
     - virt_infra_sm_creds is defined and virt_infra_sm_creds
     - virt_infra_state != "undefined"
@@ -155,7 +146,5 @@
   register: result_disk_sysprep
   become: true
   when:
-    - inventory_hostname not in groups['kvmhost']
     - inventory_hostname not in hostvars[groups['kvmhost'][0]].result_all_vms.list_vms
     - virt_infra_state != "undefined"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
