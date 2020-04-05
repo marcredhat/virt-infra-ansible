@@ -6,16 +6,16 @@
 - include_tasks: net-remove.yml
 - include_tasks: net-create.yml
 - include_tasks: defaults-set.yml
-- include_tasks: pool-create.yml
-- include_tasks: disk-create.yml
-- include_tasks: virt-create.yml
-- include_tasks: net-list.yml
-- include_tasks: virt-list.yml
-- include_tasks: virt-remove.yml
-- include_tasks: disk-remove.yml
-- include_tasks: hosts-add.yml
-- include_tasks: hosts-remove.yml
-- include_tasks: wait.yml
+#- include_tasks: pool-create.yml
+#- include_tasks: disk-create.yml
+#- include_tasks: virt-create.yml
+#- include_tasks: net-list.yml
+#- include_tasks: virt-list.yml
+#- include_tasks: virt-remove.yml
+#- include_tasks: disk-remove.yml
+#- include_tasks: hosts-add.yml
+#- include_tasks: hosts-remove.yml
+#- include_tasks: wait.yml
 
 - name: Advise if SSH key was created
   debug:
