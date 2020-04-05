@@ -7,11 +7,12 @@
     name: "{{ item.name }}"
     xml: '{{ lookup("template", "templates/virt-network.j2") }}'
     uri: "{{ virt_infra_host_libvirt_url }}"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
   become: true
   with_items: "{{ virt_infra_host_networks.present }}"
   when:
-    - inventory_hostname in groups['kvmhost']
+    #- inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"
     - item.name is defined
 
 - name: Start networks
@@ -19,11 +20,12 @@
     state: active
     name: "{{ item.name }}"
     uri: "{{ virt_infra_host_libvirt_url }}"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
   become: true
   with_items: "{{ virt_infra_host_networks.present }}"
   when:
-    - inventory_hostname in groups['kvmhost']
+    #- inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"
     - item.name is defined
 
 - name: Autostart networks
@@ -31,9 +33,10 @@
     autostart: yes
     name: "{{ item.name }}"
     uri: "{{ virt_infra_host_libvirt_url }}"
-  delegate_to: "{{ groups['kvmhost'][0] }}"
+  delegate_to: kvmhost
   become: true
   with_items: "{{ virt_infra_host_networks.present }}"
   when:
-    - inventory_hostname in groups['kvmhost']
+    #- inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"
     - item.name is defined
