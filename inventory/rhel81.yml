@@ -3,35 +3,36 @@
 ## https://docs.ansible.com/ansible/latest/plugins/inventory/yaml.html
 #
 ## Simple example using defaults to spin up 3 RHEL 8.1 guests
+
+kvmhost: # keys must be unique, i.e. only one 'hosts' per group
+    hosts:
+        kvmhost:
+        localhost:
+            var1: value1
+    vars:
+        group_var1: value2
+    children:   # key order does not matter, indentation does
+        other_group:
+            children:
+                group_x:
+                    hosts:
+                        test5
+            vars:
+                g2_var2: value3
+            hosts:
+                test4:
+                    ansible_host: 127.0.0.1
+        last_group:
+            hosts:
+                test1 # same host as above, additional group membership
+            vars:
+                last_var: MYVALUE
+
+
+
+
 rhel81:
   hosts:
     simple-rhel-8.1-[0:2]:
       ansible_python_interpreter: /usr/bin/python
   vars:
-
-
-kvmhost:
-  hosts:
-    # Put your KVM host connection and settings here
-    kvmhost:
-      ansible_connection: local
-      ansible_python_interpreter: /usr/bin/python3
-  vars:
-    # Networks are a list, you can add more than one
-    # You can create and remove NAT networks on kvmhost (creating bridges not supported)
-    # The 'default' network is the standard one shipped with libvirt
-    # By default we don't remove any networks (empty absent list)
-    virt_infra_host_networks:
-      absent:
-        - name: "other"
-      present:
-        - name: "default"
-          ip_address: "192.168.112.1"
-          subnet: "255.255.255.0"
-          dhcp_start: "192.168.112.2"
-          dhcp_end: "192.168.112.254"
-        - name: "example"
-          ip_address: "192.168.113.1"
-          subnet: "255.255.255.0"
-          dhcp_start: "192.168.113.2"
-          dhcp_end: "192.168.113.99
