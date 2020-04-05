@@ -14,7 +14,8 @@
   register: result_ssh_key_list
   changed_when: false
   when:
-    - inventory_hostname in groups['kvmhost']
+    #- inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"
     - hostvars[groups['kvmhost'][0]].virt_infra_ssh_keys is not defined
 
 - name: Read public SSH keys on KVM host if none specified
@@ -23,7 +24,8 @@
   with_items: "{{ result_ssh_key_list.files }}"
   changed_when: false
   when:
-    - inventory_hostname in groups['kvmhost']
+    #- inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"
     - hostvars[groups['kvmhost'][0]].virt_infra_ssh_keys is not defined
 
 - name: Set SSH keys as KVM host default for cloud-init
@@ -31,7 +33,8 @@
     virt_infra_ssh_keys: "{{ virt_infra_ssh_keys + [ item.stdout ] }}"
   with_items: "{{ result_ssh_keys.results }}"
   when:
-    - inventory_hostname in groups['kvmhost']
+    #- inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"
     - hostvars[groups['kvmhost'][0]].virt_infra_ssh_keys is not defined
 
 # If no SSH keys found or specified, we create one, which requires ~/.ssh dir to exist
@@ -40,7 +43,8 @@
     path: "{{ lookup('env','HOME') }}/.ssh"
     state: directory
   when:
-    - inventory_hostname in groups['kvmhost']
+    #- inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"
     - hostvars[groups['kvmhost'][0]].virt_infra_ssh_keys is not defined
     - result_ssh_key_list.files | length == 0
 
@@ -52,7 +56,8 @@
     state: present
   register: result_ssh_key_gen
   when:
-    - inventory_hostname in groups['kvmhost']
+    #- inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"
     - hostvars[groups['kvmhost'][0]].virt_infra_ssh_keys is not defined
     - result_ssh_key_list.files | length == 0
 
@@ -60,7 +65,8 @@
   set_fact:
     virt_infra_ssh_keys: "{{ virt_infra_ssh_keys + [ result_ssh_key_gen.public_key ] }}"
   when:
-    - inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"
+    #- inventory_hostname in groups['kvmhost']
     - hostvars[groups['kvmhost'][0]].virt_infra_ssh_keys is not defined
     - result_ssh_key_gen.public_key is defined and result_ssh_key_gen.public_key
 
@@ -77,12 +83,14 @@
   changed_when: false
   ignore_errors: true
   when:
-    - inventory_hostname in groups['kvmhost']
-  args:
+    #- inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"  
+args:
     executable: /bin/bash
 
 - name: Store timezone from KVM host
   set_fact:
     virt_infra_timezone: "{{ result_timezone.stdout }}"
   when:
-    - inventory_hostname in groups['kvmhost']
+    #- inventory_hostname in groups['kvmhost']
+    - inventory_hostname =="kvmhost"
