@@ -48,7 +48,8 @@
 - name: Wait for cloud-init to finish
   wait_for:
     path: /etc/cloud/cloud-init.disabled
-  ignore_errors: true 
+  ignore_errors: true
+  ignore_unreachable: true 
   when:
     - inventory_hostname not in groups['ungrouped']
     - virt_infra_state == "running"
