@@ -107,8 +107,7 @@
     virt-customize
     -a {{ hostvars[groups['ungrouped'][0]].virt_infra_host_image_path | default(virt_infra_host_image_path) }}/{{ inventory_hostname }}-boot.qcow2
     {% if virt_infra_sm_creds is defined and virt_infra_sm_creds %}
-    --force
-    --sm-register
+    --sm-register --force
     --sm-credentials {{ virt_infra_sm_creds }}
     --sm-attach {{ virt_infra_sm_attach | default("auto") }}
     {% endif %}
