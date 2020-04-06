@@ -117,6 +117,7 @@
   delay: 2
   until: result_disk_deps is succeeded
   become: true
+  ignore_errors: true
   when:
     - inventory_hostname not in groups['ungrouped']
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
@@ -138,6 +139,7 @@
   delay: 2
   until: result_disk_unregister is succeeded
   become: true
+  ignore_errors: true
   when:
     - inventory_hostname not in groups['ungrouped']
     - inventory_hostname not in hostvars[groups['ungrouped'][0]].result_all_vms.list_vms
